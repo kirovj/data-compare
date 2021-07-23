@@ -4,24 +4,18 @@ import (
 	"github.com/tealeg/xlsx"
 )
 
-// rowData data of a excel row
-type rowData map[string]string
-
-// dataMap the data map of one excel
-type dataMap map[string]*rowData
-
-type res struct {
-	x, y string
-	t    uint8
+type ExcelReader struct {
+	filepath   string // excel file path
+	keyIndexes []int  // keyIndexes is the key column index to find a data
 }
 
-func readFile(file string, keyIndexes ...int) *dataMap {
+func (e *ExcelReader) Read() *DataMap {
 	var (
 		err   error
 		excel *xlsx.File
 		cols  []string
 	)
-	if excel, err = xlsx.OpenFile(file); err != nil {
+	if excel, err = xlsx.OpenFile(e.filepath); err != nil {
 		return nil
 	}
 
@@ -31,15 +25,15 @@ func readFile(file string, keyIndexes ...int) *dataMap {
 		cols = append(cols, cell.String())
 	}
 
-	var dataMap = make(dataMap)
+	var dataMap = make(DataMap)
 
 	for _, row := range sheet.Rows[1:] {
-		var rowData = make(rowData)
+		var rowData = make(Data)
 		key := ""
 		for i, cell := range row.Cells {
 
 			// 判断是否为主键列
-			for _, index := range keyIndexes {
+			for _, index := range e.keyIndexes {
 				if index == i+1 {
 					key += cell.String()
 				}
