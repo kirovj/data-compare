@@ -5,44 +5,61 @@ import (
 )
 
 type ExcelReader struct {
-	filepath   string // excel file path
-	keyIndexes []int  // keyIndexes is the key column index to find a data
+	Filepath   string // excel file path
+	KeyIndexes []int  // keyIndexes is the key column index to find a data
 }
 
-func (e *ExcelReader) Read() *DataMap {
+func getSheet(file string) (*xlsx.Sheet, error) {
+	excel, err := xlsx.OpenFile(file)
+	if err != nil {
+		return nil, err
+	}
+	return excel.Sheets[0], nil
+}
+
+func (e *ExcelReader) isKey(i int) bool {
+	for _, index := range e.KeyIndexes {
+		if index == i+1 {
+			return true
+		}
+	}
+	return false
+}
+
+func (e *ExcelReader) Read() (*DataMap, *List) {
 	var (
 		err   error
-		excel *xlsx.File
-		cols  []string
+		sheet *xlsx.Sheet
+		cols  List
 	)
-	if excel, err = xlsx.OpenFile(e.filepath); err != nil {
-		return nil
+	if sheet, err = getSheet(e.Filepath); err != nil {
+		return nil, nil
 	}
 
-	sheet := excel.Sheets[0]
+	// get headers
 	head := sheet.Row(0)
-	for _, cell := range head.Cells {
-		cols = append(cols, cell.String())
+	cols = append(cols, "")
+	for i, cell := range head.Cells {
+		if e.isKey(i) {
+			continue
+		}
+		name := cell.String()
+		cols = append(append(append(cols, name+"_x"), name+"_y"), "result")
 	}
 
 	var dataMap = make(DataMap)
-
 	for _, row := range sheet.Rows[1:] {
-		var rowData = make(Data)
+		var rowData List
 		key := ""
 		for i, cell := range row.Cells {
-
 			// 判断是否为主键列
-			for _, index := range e.keyIndexes {
-				if index == i+1 {
-					key += cell.String()
-				}
+			if e.isKey(i) {
+				key += cell.String()
 				continue
 			}
-			rowData[cols[i]] = cell.String()
+			rowData = append(rowData, cell.String())
 		}
 		dataMap[key] = &rowData
 	}
-
-	return &dataMap
+	return &dataMap, &cols
 }
