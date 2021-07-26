@@ -87,33 +87,21 @@ func writeExcel(result, xOnly, yOnly *Result, cols *List) {
 	for _, rowData := range *result {
 		row := sheet.AddRow()
 		for _, val := range *rowData {
-			cell := row.AddCell()
-			//if i%3 == 0 {
-			//	style := cell.GetStyle()
-			//	switch val {
-			//	case "T":
-			//	case "F":
-			//		style.Fill.BgColor = "FF000000"
-			//	}
-			//	cell.SetStyle(style)
-			//}
-			cell.Value = val
+			row.AddCell().Value = val
 		}
 	}
 	xOnlySheet, _ := file.AddSheet("xOnly")
 	for _, rowData := range *xOnly {
 		row := xOnlySheet.AddRow()
 		for _, val := range *rowData {
-			cell := row.AddCell()
-			cell.Value = val
+			row.AddCell().Value = val
 		}
 	}
 	yOnlySheet, _ := file.AddSheet("yOnly")
 	for _, rowData := range *yOnly {
 		row := yOnlySheet.AddRow()
 		for _, val := range *rowData {
-			cell := row.AddCell()
-			cell.Value = val
+			row.AddCell().Value = val
 		}
 	}
 
