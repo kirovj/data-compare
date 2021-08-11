@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/tealeg/xlsx"
 )
 
@@ -110,18 +114,27 @@ func writeExcel(result, xOnly, yOnly *Result, cols *List) {
 
 func main() {
 	var keys []int
-	keys = append(keys, 1)
+
+	if len(os.Args) > 1 {
+		for _, arg := range os.Args[1:] {
+			k, _ := strconv.Atoi(arg)
+			keys = append(keys, k)
+		}
+	} else {
+		keys = append(keys, 1)
+	}
+
 	reader := &ExcelReader{
-		Filepath:   "t.xlsx",
+		Filepath:   "x.xlsx",
 		KeyIndexes: keys,
 	}
 	xDataMap, xCols := reader.Read()
-	reader.Filepath = "w.xlsx"
+	reader.Filepath = "y.xlsx"
 	yDataMap, yCols := reader.Read()
 
 	if len(*xCols) != len(*yCols) {
-		// todo
-		return
+		fmt.Println("column num of two xlsx is different, please mark sure they are equal.")
+		select {}
 	}
 
 	c := &CommonCompare{}

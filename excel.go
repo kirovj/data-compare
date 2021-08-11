@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/tealeg/xlsx"
 )
 
@@ -50,16 +52,16 @@ func (e *ExcelReader) Read() (*DataMap, *List) {
 	var dataMap = make(DataMap)
 	for _, row := range sheet.Rows[1:] {
 		var rowData List
-		key := ""
+		var key []string
 		for i, cell := range row.Cells {
 			// 判断是否为主键列
 			if e.isKey(i) {
-				key += cell.String()
+				key = append(key, cell.String())
 				continue
 			}
 			rowData = append(rowData, cell.String())
 		}
-		dataMap[key] = &rowData
+		dataMap[strings.Join(key, "|")] = &rowData
 	}
 	return &dataMap, &cols
 }
