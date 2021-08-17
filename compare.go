@@ -35,6 +35,10 @@ func (c *CommonCompare) IsEqual(x, y string) bool {
 	return x == y
 }
 
+func Equal(x, y interface{}) bool {
+	return x == y
+}
+
 func (c *CommonCompare) Compare(xMap, yMap *DataMap) (*Result, *Result, *Result) {
 
 	var (
@@ -80,7 +84,7 @@ func (c *CommonCompare) Compare(xMap, yMap *DataMap) (*Result, *Result, *Result)
 func writeExcel(result, xOnly, yOnly *Result, cols *List) {
 
 	file := xlsx.NewFile()
-	sheet, _ := file.AddSheet("Sheet1")
+	sheet, _ := file.AddSheet("Difference")
 
 	header := sheet.AddRow()
 	for _, col := range *cols {
@@ -94,14 +98,14 @@ func writeExcel(result, xOnly, yOnly *Result, cols *List) {
 			row.AddCell().Value = val
 		}
 	}
-	xOnlySheet, _ := file.AddSheet("xOnly")
+	xOnlySheet, _ := file.AddSheet("only_X_has")
 	for _, rowData := range *xOnly {
 		row := xOnlySheet.AddRow()
 		for _, val := range *rowData {
 			row.AddCell().Value = val
 		}
 	}
-	yOnlySheet, _ := file.AddSheet("yOnly")
+	yOnlySheet, _ := file.AddSheet("only_Y_has")
 	for _, rowData := range *yOnly {
 		row := yOnlySheet.AddRow()
 		for _, val := range *rowData {
@@ -133,7 +137,7 @@ func main() {
 	yDataMap, yCols := reader.Read()
 
 	if len(*xCols) != len(*yCols) {
-		fmt.Println("column num of two xlsx is different, please mark sure they are equal.")
+		fmt.Println("column num of two xlsx is different, please make sure they are equal.")
 		select {}
 	}
 
