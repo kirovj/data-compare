@@ -8,8 +8,8 @@ import (
 	"github.com/tealeg/xlsx"
 )
 
-// List is a list of string
-type List []string
+// List is a list of interface{}
+type List []interface{}
 
 // DataMap the data map to store all data
 type DataMap map[string]*List
@@ -22,24 +22,13 @@ type Reader interface {
 	Read() (*DataMap, *List)
 }
 
-type Comparer interface {
-	Compare(x, y *DataMap) (*Result, *Result, *Result)
-	IsEqual(x, y string) bool
-}
+type equal func(interface{}, interface{}) bool
 
-type CommonCompare struct {
-	Round uint8 // float round num
-}
-
-func (c *CommonCompare) IsEqual(x, y string) bool {
+func basicEqual(x, y interface{}) bool {
 	return x == y
 }
 
-func Equal(x, y interface{}) bool {
-	return x == y
-}
-
-func (c *CommonCompare) Compare(xMap, yMap *DataMap) (*Result, *Result, *Result) {
+func Compare(xMap, yMap *DataMap, e equal) (*Result, *Result, *Result) {
 
 	var (
 		result Result
@@ -63,7 +52,7 @@ func (c *CommonCompare) Compare(xMap, yMap *DataMap) (*Result, *Result, *Result)
 
 		for name, x := range *xData {
 			y := (*yData)[name]
-			if c.IsEqual(x, y) {
+			if e(x, y) {
 				r = append(r, x, y, "T")
 			} else {
 				r = append(r, x, y, "F")
@@ -89,27 +78,27 @@ func writeExcel(result, xOnly, yOnly *Result, cols *List) {
 	header := sheet.AddRow()
 	for _, col := range *cols {
 		cell := header.AddCell()
-		cell.Value = col
+		cell.Value = col.(string)
 	}
 
 	for _, rowData := range *result {
 		row := sheet.AddRow()
 		for _, val := range *rowData {
-			row.AddCell().Value = val
+			row.AddCell().Value = val.(string)
 		}
 	}
 	xOnlySheet, _ := file.AddSheet("only_X_has")
 	for _, rowData := range *xOnly {
 		row := xOnlySheet.AddRow()
 		for _, val := range *rowData {
-			row.AddCell().Value = val
+			row.AddCell().Value = val.(string)
 		}
 	}
 	yOnlySheet, _ := file.AddSheet("only_Y_has")
 	for _, rowData := range *yOnly {
 		row := yOnlySheet.AddRow()
 		for _, val := range *rowData {
-			row.AddCell().Value = val
+			row.AddCell().Value = val.(string)
 		}
 	}
 
@@ -140,8 +129,6 @@ func main() {
 		fmt.Println("column num of two xlsx is different, please make sure they are equal.")
 		select {}
 	}
-
-	c := &CommonCompare{}
-	result, xOnly, yOnly := c.Compare(xDataMap, yDataMap)
+	result, xOnly, yOnly := Compare(xDataMap, yDataMap, basicEqual)
 	writeExcel(result, xOnly, yOnly, xCols)
 }
