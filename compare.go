@@ -87,14 +87,14 @@ func writeExcel(result, xOnly, yOnly *Result, cols *List) {
 			row.AddCell().Value = val.(string)
 		}
 	}
-	xOnlySheet, _ := file.AddSheet("only_X_has")
+	xOnlySheet, _ := file.AddSheet("only_x_has")
 	for _, rowData := range *xOnly {
 		row := xOnlySheet.AddRow()
 		for _, val := range *rowData {
 			row.AddCell().Value = val.(string)
 		}
 	}
-	yOnlySheet, _ := file.AddSheet("only_Y_has")
+	yOnlySheet, _ := file.AddSheet("only_y_has")
 	for _, rowData := range *yOnly {
 		row := yOnlySheet.AddRow()
 		for _, val := range *rowData {
