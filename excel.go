@@ -61,7 +61,10 @@ func (e *ExcelReader) Read() (*DataMap, *List) {
 			}
 			rowData = append(rowData, cell.String())
 		}
-		dataMap[strings.Join(key, "|")] = &rowData
+		keyStr := strings.Join(key, "|")
+		if keyStr != "" {
+			dataMap[keyStr] = &rowData
+		}
 	}
 	return &dataMap, &cols
 }

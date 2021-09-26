@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/tealeg/xlsx"
 )
@@ -26,6 +27,10 @@ type equal func(interface{}, interface{}) bool
 
 func basicEqual(x, y interface{}) bool {
 	return x == y
+}
+
+func tmpEqual(x, y string) bool {
+	return strings.ReplaceAll(x, ".0000", "") == strings.ReplaceAll(y, ".0000", "")
 }
 
 func Compare(xMap, yMap *DataMap, e equal) (*Result, *Result, *Result) {
@@ -51,8 +56,16 @@ func Compare(xMap, yMap *DataMap, e equal) (*Result, *Result, *Result) {
 		delete(*yMap, key)
 
 		for name, x := range *xData {
+			// todo
+			//goland:noinspection ALL
+			defer func() {
+				if err := recover(); err != nil {
+					fmt.Println(key, *yData)
+				}
+			}()
+
 			y := (*yData)[name]
-			if e(x, y) {
+			if tmpEqual(StrVal(x), StrVal(y)) {
 				r = append(r, x, y, "T")
 			} else {
 				r = append(r, x, y, "F")
